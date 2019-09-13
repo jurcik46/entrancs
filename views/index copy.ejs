@@ -1,0 +1,124 @@
+<%- include('includes/header.ejs') %>
+</head>
+
+<body>
+    <%- include('includes/navigation.ejs') %>
+
+    <div id="display">
+        <nav aria-label="Stránkovanie" class="m-3">
+            <div id="reportrange" style="background: #fff; cursor: pointer; display: inline-block; float: right">
+                <i class="far fa-calendar-alt" style="font-size: 1.3rem"></i>&nbsp;
+                <span></span> <b class="caret"></b>
+            </div>
+            <paginate :page-count="pageCount" :page-range="3" :margin-pages="2" :click-handler="clickCallBack"
+                :prev-text="'&laquo;'" :next-text="'&raquo;'" :container-class="'pagination'" :page-class="'page-item'"
+                :page-link-class="'page-link'" :prev-link-class="'page-link'" :next-link-class="'page-link'"
+                ref="paginate">
+            </paginate>
+        </nav>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th><a href="#" class="text-dark"
+                            @click="options.sort = 'nfc_id', (options.order = (options.order == 'ASC') ? 'DESC' : 'ASC'), clickCallBack()">NFC
+                            ID</a></th>
+                    <th><a href="#" class="text-dark"
+                            @click="options.sort = 'name', (options.order = (options.order == 'ASC') ? 'DESC' : 'ASC'), clickCallBack()">Meno</a>
+                    </th>
+                    <th><a href="#" class="text-dark"
+                            @click="options.sort = 'description', (options.order = (options.order == 'ASC') ? 'DESC' : 'ASC'), clickCallBack()">Popis</a>
+                    </th>
+                    <th><a href="#" class="text-dark"
+                            @click="options.sort = 'created', (options.order = (options.order == 'ASC') ? 'DESC' : 'ASC'), clickCallBack()">Vytvorené</a>
+                    </th>
+                    <th>Prístup</th>
+                </tr>
+                <tr class="bg-primary">
+                    <th><input type="text" class="form-control" style="width: inherit" v-model="options.nfc_id"
+                            v-on:keyup="filterData"></th>
+                    <th><input type="text" class="form-control" style="width: inherit" v-model="options.name"
+                            v-on:keyup="filterData"></th>
+                    <th></th>
+                    <th></th>
+                    <th>
+                        <select class="form-control" v-model="options.allowed" @change="clickCallBack(0)">
+                            <option value="1" selected>Povolené</option>
+                            <option value="0">Nepovolené</option>
+                            <option value="">Všetky</option>
+                        </select>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (entrances) { %>
+                <% entrances.forEach(function(entrance){ %>
+                <tr v-for="row in rows">
+                    <td><%= entrance.dataValues.nfcId %></td>
+                    <td><%= entrance.dataValues.name %></td>
+                    <td><%= entrance.dataValues.description %></td>
+                    <td class="flex-nowrap"><%= entrance.dataValues.created %></td>
+                    <td style="text-align: center">
+                        <% if (entrance.dataValues.allowed) { %>
+                        <i v-if="row.allowed == 1" class="text-success fas fa-check-square"
+                            style="font-size: 1.3rem;"></i>
+                        <% }else { %>
+                        <i v-else class="text-danger fas fa-exclamation-triangle"
+                            style="font-size: 1.3rem; color: #dc3545 !important"></i>
+                        <% } %>
+                    </td>
+                </tr>
+                <% }); %>
+
+                <% }else { %>
+                <tr>
+                    <td class="text-center" colspan="5">Nenašli sa žiadne dáta</td>
+                </tr>
+                <% } %>
+
+            </tbody>
+        </table>
+    </div>
+
+    <%- include('includes/footer.ejs') %>
+
+
+    <script>
+        $(function () {
+            moment.locale('sk');
+
+            var start = moment();
+            var end = moment();
+
+            function cb(start, end) {
+                $('#reportrange span').html(start.format('DD.MM.YYYY') + ' - ' + end.format('DD.MM.YYYY'));
+            }
+
+            $('#reportrange').daterangepicker({
+                alwaysShowCalendars: true,
+                startDate: start,
+                endDate: end,
+                locale: {
+                    format: 'DD.MM.YYYY',
+                    applyLabel: "Potvrdiť",
+                    cancelLabel: "Zrušiť",
+                    customRangeLabel: "Vlastný rozsah",
+                },
+                ranges: {
+                    'Dnes': [moment(), moment()],
+                    'Včera': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Posledných 7 dní': [moment().subtract(6, 'days'), moment()],
+                    'Posledných 30 dní': [moment().subtract(29, 'days'), moment()],
+                    'Tento mesiac': [moment().startOf('month'), moment().endOf('month')],
+                    'Minulý mesiac': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                }
+            }, cb);
+            cb(start, end);
+        });
+
+        $('#reportrange').on('apply.daterangepicker', function (ev, picker) {
+            console.log('picker.startDate.format(): ', picker.startDate.format('YYYY-MM-DD'));
+            display.$data.options.startDate = picker.startDate.format('YYYY-MM-DD');
+            display.$data.options.endDate = picker.endDate.format('YYYY-MM-DD');
+            display.clickCallBack();
+        });
+    </script>

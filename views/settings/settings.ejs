@@ -1,0 +1,262 @@
+<%- include('../includes/header.ejs') %>
+</head>
+
+<body>
+    <%- include('../includes/navigation.ejs') %>
+
+    <div id="permission">
+        <nav aria-label="Stránkovanie" class="m-3">
+            <button type="button" class="btn btn-success" style="display: inline-block; float: right" @click="addRow"
+                data-toggle="modal" data-target="#addModal">Pridať</button>
+            <paginate :page-count="pageCount" :page-range="3" :margin-pages="2" :click-handler="clickCallBack"
+                :prev-text="'&laquo;'" :next-text="'&raquo;'" :container-class="'pagination'" :page-class="'page-item'"
+                :page-link-class="'page-link'" :prev-link-class="'page-link'" :next-link-class="'page-link'"
+                ref="paginate">
+            </paginate>
+        </nav>
+        <table class="table table-hover border-0">
+            <thead>
+                <tr>
+                    <th><a href="#" class="text-dark"
+                            @click="options.sort = 'nfcId', (options.order = (options.order == 'ASC') ? 'DESC' : 'ASC'), clickCallBack()">NFC
+                            ID</a></th>
+                    <th><a href="#" class="text-dark"
+                            @click="options.sort = 'name', (options.order = (options.order == 'ASC') ? 'DESC' : 'ASC'), clickCallBack()">Meno</a>
+                    </th>
+                    <th><a href="#" class="text-dark"
+                            @click="options.sort = 'description', (options.order = (options.order == 'ASC') ? 'DESC' : 'ASC'), clickCallBack()">Popis</a>
+                    </th>
+                    <th><a href="#" class="text-dark"
+                            @click="options.sort = 'created', (options.order = (options.order == 'ASC') ? 'DESC' : 'ASC'), clickCallBack()">Vytvorené</a>
+                    </th>
+                    <th></th>
+                </tr>
+                <tr class="bg-primary">
+                    <th><input type="text" class="form-control" style="width: inherit" v-model="options.nfcId"
+                            v-on:keyup="filterData"></th>
+                    <th><input type="text" class="form-control" style="width: inherit" v-model="options.name"
+                            v-on:keyup="filterData"></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <template v-if="rows.length">
+                    <tr v-for="row, index in rows">
+                        <td>{{ row.nfcId }}</td>
+                        <td>{{ row.name }}</td>
+                        <td>{{ row.description }}</td>
+                        <td class="flex-nowrap">{{ row.created }}</td>
+                        <td style="text-align: right">
+                            <a class="btn btn-warning fas fa-edit" style="color: #fff!important;"
+                                @click="editRow(index)" data-toggle="modal" data-target="#editModal"></a>
+                            <a class="btn btn-danger fas fa-trash" style="color: #fff!important;"
+                                @click="deleteRow(index)"></a>
+                        </td>
+                    </tr>
+                </template>
+                <template v-else>
+                    <tr>
+                        <td class="text-center" colspan="5">Nenašli sa žiadne dáta</td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+
+        <!-- Add modal -->
+        <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addModalLabel">Vytvorenie NFC karty</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="add__nfcId">NFC ID</label>
+                            <input type="text" class="form-control" id="add__nfcId" ref="addNfcId" v-model="save.nfcId">
+                        </div>
+                        <div class="form-group">
+                            <label for="add__name">Meno</label>
+                            <input type="text" class="form-control" id="add__name" v-model="save.name">
+                        </div>
+                        <div class="form-group">
+                            <label for="add__description">Popis</label>
+                            <input type="text" class="form-control" id="add__description" v-model="save.description">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavrieť</button>
+                        <button type="button" class="btn btn-primary" @click="saveRow()">Uložiť zmeny</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit modal -->
+        <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editModalLabel">Editácia NFC karty</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="edit__nfcId">NFC ID</label>
+                            <input type="text" class="form-control" id="edit__nfcId" v-model="save.nfcId">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit__name">Meno</label>
+                            <input type="text" class="form-control" id="edit__name" v-model="save.name">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit__description">Popis</label>
+                            <input type="text" class="form-control" id="edit__description" v-model="save.description">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavrieť</button>
+                        <button type="button" class="btn btn-primary" @click="saveRow(save.id)">Uložiť zmeny</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <%- include('../includes/footer.ejs') %>
+
+    <script>
+        var hostLink = "<%= host %>";;
+        var hostPort = "<%= port %>";;
+        let permission = new Vue({
+            el: '#permission',
+            data: {
+                rows: [],
+                pageCount: 0,
+                total: 0,
+                save: {
+                    id: 0,
+                    nfcId: '',
+                    name: '',
+                    description: '',
+                    created: '',
+                    updated: ''
+                },
+                options: {
+                    limit: 5,
+                    offset: 0,
+                    sort: 'created',
+                    order: 'DESC',
+                    nfcId: '',
+                    name: ''
+                }
+            },
+            components: {
+                'paginate': VuejsPaginate
+            },
+            mounted() {
+                this.options.offset = (this.$refs.paginate.selected) * this.options.limit;
+                $.get('http://' + hostLink + (hostPort ? ':' + hostPort : '') + '/api/settings', this.options, function (data) {
+                    permission.$data.rows = data.result;
+                    permission.$data.total = data.total;
+                    permission.$data.pageCount = Math.ceil(data.total / permission.$data.options.limit);
+                });
+            },
+            methods: {
+                clickCallBack(pagenum) {
+                    (pagenum == 0) ? this.$refs.paginate.selected = pagenum : null;
+                    this.options.offset = (this.$refs.paginate.selected) * this.options.limit;
+                    $.get('http://' + hostLink + (hostPort ? ':' + hostPort : '') + '/api/settings', permission.$data.options, function (data) {
+                        permission.$data.rows = data.result;
+                        permission.$data.total = data.total;
+                        permission.$data.pageCount = Math.ceil(data.total / permission.$data.options.limit);
+                    });
+                },
+                filterData: _.debounce(
+                    function () {
+                        this.clickCallBack(0);
+                    },
+                    500
+                ),
+                addRow() {
+                    $('#addModal').on('shown.bs.modal', function () {
+                        permission.$refs.addNfcId.focus();
+                    });
+                    this.save.id = 0;
+                    this.save.nfcId = '';
+                    this.save.name = '';
+                    this.save.description = '';
+                    this.save.created = '';
+                    this.save.updated = '';
+                },
+                editRow(index) {
+                    let data = this.rows[index];
+                    this.save.id = data.id;
+                    this.save.nfcId = data.nfcId;
+                    this.save.name = data.name;
+                    this.save.description = data.description;
+                    this.save.created = data.created;
+                    this.save.updated = data.updated;
+                },
+                saveRow(id) {
+                    fetch('http://' + hostLink + (hostPort ? ':' + hostPort : '') + '/api/settings', {
+                        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(permission.$data.save)
+                    }).then(data => {
+                        permission.clickCallBack(0);
+                        if (data) {
+                            swal("NFC karta bola uložená!", {
+                                icon: "success",
+                            });
+                        } else {
+                            swal("NFC kartu sa nepodarilo uložiť!", {
+                                icon: "warning",
+                            });
+                        }
+                        $('#addModal, #editModal').modal('hide');
+                    }) // body data type must match "Content-Type" header
+                },
+                deleteRow(index) {
+                    swal({
+                        title: "Ste si istý?",
+                        text: "NFC karta bude vymazaná!",
+                        icon: "warning",
+                        buttons: {
+                            confirm: 'Potvrdiť',
+                            cancel: "Zrušiť",
+                        },
+                        dangerMode: true,
+                    }).then((willDelete) => {
+                        if (willDelete) {
+                            $.ajax({
+                                type: 'delete',
+                                url: 'http://' + hostLink + (hostPort ? ':' + hostPort : '') + '/api/settings/' + this.rows[index].id,
+                                success: function (d) {
+                                    if (d) {
+                                        swal("NFC karta bola vymazaná!", {
+                                            icon: "success",
+                                        });
+                                    } else {
+                                        swal("NFC kartu sa nepodarilo vymazať!", {
+                                            icon: "warning",
+                                        });
+                                    }
+                                    permission.clickCallBack(0);
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        })
+    </script>
