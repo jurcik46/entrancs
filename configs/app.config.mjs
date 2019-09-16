@@ -8,7 +8,6 @@ export const APP_PORT = process.env.APP_PORT;
 
 export const CSS_FOLDER_PATH = path.join(staticFolderPath, "css");
 export const SCSS_FOLDER_PATH = path.join(appRoot.path, "view/scss");
-
 export const sassMiddlewareOptions = {
   src: CSS_FOLDER_PATH,
   dest: SCSS_FOLDER_PATH,

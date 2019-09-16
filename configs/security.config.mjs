@@ -2,11 +2,12 @@ import createError from "http-errors";
 const _corsOriginWhitelist = [
   "https://cdpn.io",
   "https://s.codepfen.io",
-  "http://localhost:3000"
+  "http://localhost:3000",
+  "http://localhost:3001",
 ];
 
 export const corsOption = {
-  origin: function(origin, callback) {
+  origin: function (origin, callback) {
     if (_corsOriginWhitelist.indexOf(origin) !== -1 || !origin) {
       callback(null, true);
     } else {

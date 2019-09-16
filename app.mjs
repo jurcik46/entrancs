@@ -10,7 +10,7 @@ import rateLimiterMiddleware from "./middlewares/requestRateLimiter.middleware.m
 import { corsOption } from "./configs/security.config.mjs";
 import { LOG_OUTPUT } from "./configs/logger.config.mjs";
 import { dbAuthenticate, dbSqlite } from "./helpers/db.helper.mjs";
-import sassMiddleware from "node-sass-middleware";
+// import sassMiddleware from "node-sass-middleware";
 import flash from "connect-flash";
 import errorHandlerDev from "errorhandler";
 
@@ -20,7 +20,7 @@ import {
 } from "./middlewares/errorHandler.middleware.mjs";
 import {
   sessionOptions,
-  sassMiddlewareOptions,
+  // sassMiddlewareOptions,
   staticFolderPath,
   APP_ROUTE_PREFIX
 } from "./configs/app.config.mjs";
@@ -56,10 +56,12 @@ app.use(cookieParser());
 app.use(session(sessionOptions));
 //* Flash messages */
 app.use(flash());
-app.use(sassMiddleware(sassMiddlewareOptions));
+// app.use(sassMiddleware(sassMiddlewareOptions));
 //** Static folder  */
 app.use(express.static(staticFolderPath));
-
+// app.get("/", (req, res, next) => {
+//   res.json("asdasa");
+// })
 //** Root router implementation */
 app.use(rootRouter);
 app.use(APP_ROUTE_PREFIX, apiRouter);
